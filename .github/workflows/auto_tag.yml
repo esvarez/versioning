@@ -1,0 +1,52 @@
+name: Auto Tag
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out repository
+      uses: actions/checkout@v2
+
+    - name: Set up Git
+      run: |
+        git config --global user.name 'Your Name'
+        git config --global user.email 'your-email@example.com'
+
+    - name: Extract version bump type
+      id: version-bump
+      run: |
+        COMMIT_MESSAGE=$(git log -1 --pretty=%B)
+        if [[ $COMMIT_MESSAGE == *"[MAJOR]"* ]]; then
+          echo "::set-output name=type::major"
+        elif [[ $COMMIT_MESSAGE == *"[MINOR]"* ]]; then
+          echo "::set-output name=type::minor"
+        elif [[ $COMMIT_MESSAGE == *"[PATCH]"* ]]; then
+          echo "::set-output name=type::patch"
+        else
+          echo "::set-output name=type::none"
+        fi
+
+    - name: Calculate new version
+      id: new-version
+      if: steps.version-bump.outputs.type != 'none'
+      uses: actions/github-script@v5
+      with:
+        script: |
+          const semver = require('semver');
+          const { execSync } = require('child_process');
+          const versionBumpType = '${{ steps.version-bump.outputs.type }}';
+          const latestTag = execSync('git describe --tags --abbrev=0').toString().trim();
+          const newVersion = semver.inc(latestTag, versionBumpType);
+          return newVersion;
+
+    - name: Create and push tag
+      if: steps.version-bump.outputs.type != 'none'
+      run: |
+        NEW_VERSION=${{ steps.new-version.outputs.result }}
+        git tag $NEW_VERSION
+        git push origin $NEW_VERSION
