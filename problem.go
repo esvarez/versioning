@@ -23,3 +23,37 @@ func divideArray(nums []int, k int) [][]int {
 
 	return results
 }
+
+
+
+
+func bestSolution(nums []int, k int) [][]int {
+	minVal, maxVal := nums[0], nums[0]
+	for _, v := range nums {
+		if v < minVal {
+			minVal = v
+		}
+		if v > maxVal {
+			maxVal = v
+		}
+	}
+	count := make([]int, maxVal-minVal+1)
+	for _, v := range nums {
+		count[v-minVal]++
+	}
+
+	sorted := make([]int, 0, len(nums))
+	for i, c := range count {
+		for j := 0; j < c; j++ {
+			sorted = append(sorted, i+minVal)
+		}
+	}
+	ans := make([][]int, 0, len(nums)/3)
+	for i := 0; i < len(sorted); i += 3 {
+		if sorted[i+2]-sorted[i] > k {
+			return [][]int{}
+		}
+		ans = append(ans, sorted[i:i+3])
+	}
+	return ans
+}
