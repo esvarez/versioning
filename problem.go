@@ -1,7 +1,8 @@
-package main 
+package main
 
 import (
 	"sort"
+	"unicode"
 )
 
 func divideArray(nums []int, k int) [][]int {
@@ -10,8 +11,8 @@ func divideArray(nums []int, k int) [][]int {
 	results := [][]int{}
 	for i := 0; i < len(nums); i++ {
 		sub = append(sub, nums[i])
-		if i % 3 == 2 {
-			if nums[i] - sub[0] > k {
+		if i%3 == 2 {
+			if nums[i]-sub[0] > k {
 				return [][]int{}
 			} else {
 				results = append(results, sub)
@@ -20,12 +21,8 @@ func divideArray(nums []int, k int) [][]int {
 		}
 	}
 
-
 	return results
 }
-
-
-
 
 func bestSolution(nums []int, k int) [][]int {
 	minVal, maxVal := nums[0], nums[0]
@@ -56,4 +53,25 @@ func bestSolution(nums []int, k int) [][]int {
 		ans = append(ans, sorted[i:i+3])
 	}
 	return ans
+}
+
+func isValid(word string) bool {
+	if len(word) < 3 {
+		return false
+	}
+	hasVowel := false
+	hasConsonant := false
+	for _, c := range word {
+		if unicode.IsLetter(c) {
+			ch := unicode.ToLower(c)
+			if ch == 'a' || ch == 'e' || ch == 'i' || ch == 'o' || ch == 'u' {
+				hasVowel = true
+			} else {
+				hasConsonant = true
+			}
+		} else if !unicode.IsDigit(c) {
+			return false
+		}
+	}
+	return hasVowel && hasConsonant
 }
